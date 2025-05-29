@@ -2,84 +2,112 @@ import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { User, CreateUserDto, UpdateUserDto, UserList, PaginationDto } from '@app/common';
 import { randomUUID } from 'crypto';
 import { Observable, Subject } from 'rxjs';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { SocialMediaEntity, UserEntity } from './entities';
+import { UserMapper } from './mappers/user.mapper';
 
 @Injectable()
-export class UsersService implements OnModuleInit {
-  private readonly users: User[] = [];
+export class UsersService {
+  // private readonly users: User[] = [];
 
-  onModuleInit() {
-    for (let i = 0; i < 40; i++) {
-      this.create({
-        username: randomUUID(),
-        password: randomUUID(),
-        age: 0,
-        socialMedia: {
-          email: i + '@example.com',
-          phone: `+1234567890${i}`,
-        }
-      })
-    }
+  constructor(
+    @InjectRepository(UserEntity)
+    private readonly userRepository: Repository<UserEntity>,
+    @InjectRepository(SocialMediaEntity)
+    private readonly socialMediaRepository: Repository<SocialMediaEntity>,
+  ) { }
+
+  // onModuleInit() {
+  //   for (let i = 0; i < 40; i++) {
+  //     this.create({
+  //       username: randomUUID(),
+  //       password: randomUUID(),
+  //       age: 0,
+  //       socialMedia: {
+  //         email: i + '@example.com',
+  //         phone: `+1234567890${i}`,
+  //       }
+  //     })
+  //   }
+  // }
+
+  async create(createUserDto: CreateUserDto): Promise<User> {
+    const userEntity = UserMapper.toEntity(createUserDto);
+    const saved = await this.userRepository.save(userEntity);
+    return UserMapper.toGrpc(saved);
   }
 
-  create(createUserDto: CreateUserDto): User {
-    const user: User = {
-      ...createUserDto,
-      id: randomUUID(),
-      isActive: true,
-      socialMedia: {
-        email: createUserDto.socialMedia?.email || '',
-        phone: createUserDto.socialMedia?.phone || '',
-        fbUri: createUserDto.socialMedia?.fbUri || '',
-        twitterUri: createUserDto.socialMedia?.twitterUri || '',
-      }
-    }
-    this.users.push(user);
-    return user;
-  }
-
-  findAll(): UserList {
+  async findAll(): Promise<UserList> {
     return {
-      users: this.users,
+      users: await this.userRepository.find().then(users => users.map(user => UserMapper.toGrpc(user))),
     }
   }
 
-  findOne(id: string): User {
-    const user = this.users.find(user => user.id === id);
+  async findOne(id: string): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: { id },
+      relations: ['socialMedia'],
+    }).then(user => user ? UserMapper.toGrpc(user) : null);
     if (!user) {
       throw new NotFoundException(`User with id ${id} not found`);
     }
     return user;
   }
 
-  update(id: string, updateUserDto: UpdateUserDto): User {
-    const userIndex = this.users.findIndex(user => user.id === id);
-    if (userIndex === -1) {
+  async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: { id },
+      relations: ['socialMedia'],
+    });
+    if (!user) {
       throw new NotFoundException(`User with id ${id} not found`);
     }
-    const updatedUser = {
-      ...this.users[userIndex],
-      ...updateUserDto,
-      id: id,
-    };
-    this.users[userIndex] = updatedUser;
-    return updatedUser;
+    if (updateUserDto.socialMedia) {
+      if (user.socialMedia) {
+        // Nếu đã có SocialMedia thì cập nhật
+        user.socialMedia.email = updateUserDto.socialMedia.email;
+        user.socialMedia.phone = updateUserDto.socialMedia.phone;
+        user.socialMedia.fbUri = updateUserDto.socialMedia.fbUri;
+        user.socialMedia.twitterUri = updateUserDto.socialMedia.twitterUri;
+      } else {
+        const sm = new SocialMediaEntity();
+        sm.email = updateUserDto.socialMedia.email;
+        sm.phone = updateUserDto.socialMedia.phone;
+        sm.fbUri = updateUserDto.socialMedia.fbUri;
+        sm.twitterUri = updateUserDto.socialMedia.twitterUri;
+        sm.user = user;
+        user.socialMedia = sm;
+      }
+    }
+    const savedUser = await this.userRepository.save(user);
+    return UserMapper.toGrpc(savedUser);
   }
 
-  remove(id: string): User {
-    const userIndex = this.users.findIndex(user => user.id === id);
-    if (userIndex === -1) {
+  async remove(id: string): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: { id },
+      relations: ['socialMedia'],
+    });
+    if (!user) {
       throw new NotFoundException(`User with id ${id} not found`);
     }
-    return this.users.splice(userIndex, 1)[0];
+    await this.socialMediaRepository.remove(user.socialMedia);
+    await this.userRepository.remove(user);
+    return UserMapper.toGrpc(user);
   }
 
   queryUsers(paginationDtoStream: Observable<PaginationDto>): Observable<UserList> {
     const subject = new Subject<UserList>();
 
-    const onNext = (paginationDto: PaginationDto) => {
+    const onNext = async (paginationDto: PaginationDto) => {
       const start = paginationDto.page * paginationDto.skip;
       subject.next({
-        users: this.users.slice(start, start + paginationDto.skip)
+        users: await this.userRepository.find({
+          skip: start,
+          take: paginationDto.skip,
+          relations: ['socialMedia'],
+        }).then(users => users.map(user => UserMapper.toGrpc(user))),
       });
     }
 
