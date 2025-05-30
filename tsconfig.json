@@ -24,6 +24,12 @@
       "@app/common/*": [
         "libs/common/src/*"
       ],
+      "@app/common/auth": [
+        "libs/common/auth/src"
+      ],
+      "@app/common/auth/*": [
+        "libs/common/auth/src/*"
+      ],
       "@app/database": [
         "libs/database/src"
       ],

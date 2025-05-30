@@ -1,6 +1,5 @@
 import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { User, CreateUserDto, UpdateUserDto, UserList, PaginationDto } from '@app/common';
-import { randomUUID } from 'crypto';
 import { Observable, Subject } from 'rxjs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -53,6 +52,27 @@ export class UsersService {
       throw new NotFoundException(`User with id ${id} not found`);
     }
     return user;
+  }
+
+  async findByQuery(query: object): Promise<UserList> {
+    const users = await this.userRepository.find({
+      where: query,
+      relations: ['socialMedia'],
+    });
+    return {
+      users: users.map(user => UserMapper.toGrpc(user)),
+    };
+  }
+
+  async findOneByQuery(query: object): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: query,
+      relations: ['socialMedia'],
+    });
+    if (!user) {
+      throw new NotFoundException(`User with query ${JSON.stringify(query)} not found`);
+    }
+    return UserMapper.toGrpc(user);
   }
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {

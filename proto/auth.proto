@@ -2,54 +2,30 @@ syntax = "proto3";
 
 package auth;
 
-service UserService {
-    rpc CreateUser(CreateUserDto) returns (User){}
-    rpc FindAllUsers(Empty) returns (UserList){}
-    rpc FindOneUser(FindOneUserDto) returns (User){}
-    rpc UpdateUser(UpdateUserDto) returns (User){}
-    rpc RemoveUser(FindOneUserDto) returns (User){}
-    rpc QueryUsers (stream PaginationDto) returns (stream UserList) {}
+// Import từ user.proto
+import "proto/user.proto";
+
+service AuthService {
+  rpc Register (RegisterRequest) returns (AuthResponse);
+  rpc Login (LoginRequest) returns (AuthResponse);
 }
 
-message PaginationDto {
-    int32 page = 1;
-    int32 skip = 2;
+message RegisterRequest {
+  string username = 1;
+  string password = 2;
+  int32 age = 3;
+  user.SocialMedia socialMedia = 4;
 }
 
-message UpdateUserDto {
-    string id = 1;
-    SocialMedia socialMedia = 2;
+message LoginRequest {
+  string username = 1;
+  string password = 2;
 }
 
-message FindOneUserDto {
-    string id = 1;
-}
-
-message Empty {}
-
-message UserList {
-    repeated User users = 1;
-}
-
-message CreateUserDto {
-    string username = 1;
-    string password = 2;
-    int32 age = 3;
-    SocialMedia socialMedia = 4;
-}
-
-message User{
-    string id = 1;
-    string username = 2;
-    string password = 3;
-    int32 age = 4;
-    bool isActive = 5;
-    SocialMedia socialMedia = 6;
-}
-
-message SocialMedia{
-    string email = 1;
-    string phone = 2;
-    optional string fbUri=3;
-    optional string twitterUri=4;
+message AuthResponse {
+  string accessToken = 1;
+  string refreshToken = 2;
+  string userId = 3;
+  string username = 4;
+  optional user.UserRole role = 5;
 }

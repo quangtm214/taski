@@ -8,5 +8,6 @@ import { SocialMediaEntity, UserEntity } from './entities';
   imports: [TypeOrmModule.forFeature([UserEntity, SocialMediaEntity])],
   controllers: [UsersController],
   providers: [UsersService],
+  exports: [UsersService]
 })
 export class UsersModule { }
