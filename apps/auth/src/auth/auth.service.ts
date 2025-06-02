@@ -3,7 +3,8 @@ import { UsersService } from '../users/users.service';
 import { AuthResponse, LoginRequest, RegisterRequest } from '@app/common/types/auth';
 import { CreateUserDto, JwtService, UserRole } from '@app/common';
 import * as bcrypt from 'bcrypt';
-
+import { RpcException } from '@nestjs/microservices';
+import { status } from '@grpc/grpc-js';
 @Injectable()
 export class AuthService {
     constructor(
@@ -15,7 +16,12 @@ export class AuthService {
         //check if user already exists
         const existingUser = await this.userService.findByQuery({ username: registerRequest.username });
         if (existingUser.users.length > 0) {
-            throw new BadRequestException('User already exists');
+            throw new RpcException(
+                {
+                    code: status.ALREADY_EXISTS,
+                    message: `User with username ${registerRequest.username} already exists`
+                }
+            )
         }
         let userDto: CreateUserDto;
         userDto = {

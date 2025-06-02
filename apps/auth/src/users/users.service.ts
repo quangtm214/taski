@@ -6,7 +6,8 @@ import { Repository } from 'typeorm';
 import { SocialMediaEntity, UserEntity } from './entities';
 import { UserMapper } from './mappers/user.mapper';
 import * as bcrypt from 'bcrypt';
-
+import { RpcException } from '@nestjs/microservices';
+import { status } from '@grpc/grpc-js';
 @Injectable()
 export class UsersService {
   // private readonly users: User[] = [];
@@ -38,11 +39,21 @@ export class UsersService {
       relations: ['socialMedia'],
     });
     if (!user) {
-      throw new NotFoundException(`User with username ${userName} not found`);
+      throw new RpcException(
+        {
+          code: status.NOT_FOUND,
+          message: `User with username ${userName} not found`,
+        }
+      )
     }
     const isPasswordValid = await bcrypt.compare(userPassword, user.password);
     if (!isPasswordValid) {
-      throw new BadRequestException('Invalid credentials');
+      throw new RpcException(
+        {
+          code: status.UNAUTHENTICATED,
+          message: `Invalid password`,
+        }
+      )
     }
     return UserMapper.toGrpc(user);
   }
@@ -66,7 +77,12 @@ export class UsersService {
       relations: ['socialMedia'],
     }).then(user => user ? UserMapper.toGrpc(user) : null);
     if (!user) {
-      throw new NotFoundException(`User with id ${id} not found`);
+      throw new RpcException(
+        {
+          code: status.NOT_FOUND,
+          message: `User with id ${id} not found`,
+        }
+      )
     }
     return user;
   }
@@ -87,7 +103,12 @@ export class UsersService {
       relations: ['socialMedia'],
     });
     if (!user) {
-      throw new NotFoundException(`User with query ${JSON.stringify(query)} not found`);
+      throw new RpcException(
+        {
+          code: status.NOT_FOUND,
+          message: `User with query ${JSON.stringify(query)} not found`,
+        }
+      )
     }
     return UserMapper.toGrpc(user);
   }
@@ -98,7 +119,12 @@ export class UsersService {
       relations: ['socialMedia'],
     });
     if (!user) {
-      throw new NotFoundException(`User with id ${id} not found`);
+      throw new RpcException(
+        {
+          code: status.NOT_FOUND,
+          message: `User with id ${id} not found`,
+        }
+      )
     }
     if (updateUserDto.socialMedia) {
       if (user.socialMedia) {
