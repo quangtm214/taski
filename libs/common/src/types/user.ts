@@ -2,7 +2,7 @@
 // versions:
 //   protoc-gen-ts_proto  v2.7.0
 //   protoc               v6.31.0
-// source: proto/user.proto
+// source: user.proto
 
 /* eslint-disable */
 import { GrpcMethod, GrpcStreamMethod } from "@nestjs/microservices";
@@ -49,7 +49,6 @@ export interface CreateUserDto {
 export interface User {
   id: string;
   username: string;
-  password: string;
   age: number;
   isActive: boolean;
   socialMedia: SocialMedia | undefined;

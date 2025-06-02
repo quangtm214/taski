@@ -3,7 +3,7 @@ syntax = "proto3";
 package auth;
 
 // Import từ user.proto
-import "proto/user.proto";
+import "user.proto";
 
 service AuthService {
   rpc Register (RegisterRequest) returns (AuthResponse);

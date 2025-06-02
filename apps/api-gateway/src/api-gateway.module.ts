@@ -1,9 +1,18 @@
 import { Module } from '@nestjs/common';
-import { UsersModule } from 'apps/api-gateway/src/users/users.module';
+import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './users/users.module';
+import { SharedAuthModule } from '@app/common';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
-    UsersModule
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
+    SharedAuthModule,
+    UsersModule,
+    AuthModule
   ],
   controllers: [],
   providers: [],

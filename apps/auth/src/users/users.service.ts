@@ -1,10 +1,11 @@
-import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { User, CreateUserDto, UpdateUserDto, UserList, PaginationDto } from '@app/common';
 import { Observable, Subject } from 'rxjs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SocialMediaEntity, UserEntity } from './entities';
 import { UserMapper } from './mappers/user.mapper';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -31,8 +32,24 @@ export class UsersService {
   //   }
   // }
 
+  async checkUserCredentials(userName: string, userPassword: string): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: { username: userName },
+      relations: ['socialMedia'],
+    });
+    if (!user) {
+      throw new NotFoundException(`User with username ${userName} not found`);
+    }
+    const isPasswordValid = await bcrypt.compare(userPassword, user.password);
+    if (!isPasswordValid) {
+      throw new BadRequestException('Invalid credentials');
+    }
+    return UserMapper.toGrpc(user);
+  }
+
   async create(createUserDto: CreateUserDto): Promise<User> {
     const userEntity = UserMapper.toEntity(createUserDto);
+    userEntity.password = await bcrypt.hash(createUserDto.password, 10);
     const saved = await this.userRepository.save(userEntity);
     return UserMapper.toGrpc(saved);
   }

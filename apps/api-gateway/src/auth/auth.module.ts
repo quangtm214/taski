@@ -5,6 +5,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AUTH_SERVICE } from './constant';
 import { join } from 'path';
 import { AUTH_PACKAGE_NAME } from '@app/common/types/auth';
+import { SharedAuthModule } from '@app/common';
 
 @Module({
   imports: [

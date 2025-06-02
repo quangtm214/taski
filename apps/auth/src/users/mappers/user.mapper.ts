@@ -8,7 +8,6 @@ export class UserMapper {
         return {
             id: entity.id,
             username: entity.username,
-            password: entity.password,
             age: entity.age,
             isActive: entity.isActive,
             role: this.mapEntityToProtoRole(entity.role),
@@ -23,7 +22,7 @@ export class UserMapper {
         };
     }
 
-    static toEntity(dto: CreateUserDto | User): UserEntity {
+    static toEntity(dto: CreateUserDto): UserEntity {
         const user = new UserEntity();
         user.username = dto.username;
         user.password = dto.password;

@@ -6,12 +6,12 @@ import { LoginRequest, RegisterRequest } from '@app/common/types/auth';
 export class AuthController {
   constructor(private readonly authService: AuthService) { }
 
-  @Post()
+  @Post('register')
   register(@Body() registerRequest: RegisterRequest) {
     return this.authService.register(registerRequest)
   }
 
-  @Post()
+  @Post('login')
   login(@Body() loginRequest: LoginRequest) {
     return this.authService.login(loginRequest)
   }

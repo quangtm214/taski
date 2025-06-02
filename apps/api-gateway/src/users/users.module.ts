@@ -4,7 +4,7 @@ import { UsersController } from './users.controller';
 import { USER_SERVICE } from 'apps/api-gateway/src/users/constant';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { join } from 'path';
-import { USER_PACKAGE_NAME } from '@app/common';
+import { SharedAuthModule, USER_PACKAGE_NAME } from '@app/common';
 
 @Module({
   imports: [
@@ -18,6 +18,7 @@ import { USER_PACKAGE_NAME } from '@app/common';
         },
       },
     ]),
+    SharedAuthModule
   ],
   controllers: [UsersController],
   providers: [UsersService],

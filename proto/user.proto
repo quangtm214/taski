@@ -42,7 +42,6 @@ message CreateUserDto {
 message User{
     string id = 1;
     string username = 2;
-    string password = 3;
     int32 age = 4;
     bool isActive = 5;
     SocialMedia socialMedia = 6;

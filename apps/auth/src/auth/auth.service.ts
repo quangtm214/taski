@@ -45,15 +45,8 @@ export class AuthService {
     }
 
     async login(loginRequest: LoginRequest): Promise<AuthResponse> {
-        // find user by username
-        const user = await this.userService.findOneByQuery({ username: loginRequest.username });
-        if (!user) {
-            throw new BadRequestException('User not found');
-        }
-        const isPasswordValid = await bcrypt.compare(loginRequest.password, user.password);
-        if (!isPasswordValid) {
-            throw new BadRequestException('Invalid credentials');
-        }
+        // find user by userName
+        const user = await this.userService.checkUserCredentials(loginRequest.username, loginRequest.password);
         const jwtPayload = {
             userId: user.id,
             username: user.username,
