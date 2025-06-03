@@ -1,8 +1,9 @@
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, InternalServerErrorException, OnModuleInit } from '@nestjs/common';
 import { CreateUserDto, PaginationDto, UpdateUserDto, USER_SERVICE_NAME, UserServiceClient } from '@app/common';
 import { USER_SERVICE } from './constant';
 import { ClientGrpc } from '@nestjs/microservices';
 import { ReplaySubject } from 'rxjs';
+import { status } from '@grpc/grpc-js';
 
 @Injectable()
 export class UsersService implements OnModuleInit {
@@ -24,8 +25,16 @@ export class UsersService implements OnModuleInit {
     return this.usersService.findAllUsers({});
   }
 
-  findOne(id: string) {
-    return this.usersService.findOneUser({ id });
+  async findOne(id: string) {
+    try {
+      return await this.usersService.findOneUser({ id });
+
+    } catch (error) {
+      if (error.code === status.ALREADY_EXISTS) {
+        throw new BadRequestException(error.details)
+      }
+      throw new InternalServerErrorException('An unexpected error occurred during registration.')
+    }
   }
 
   update(id: string, updateUserDto: UpdateUserDto) {

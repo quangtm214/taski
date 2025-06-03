@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
-import { User, CreateUserDto, UpdateUserDto, UserList, PaginationDto } from '@app/common';
+import { User, CreateUserDto, UpdateUserDto, UserList, PaginationDto, GrpcAppException, UserErrorCode } from '@app/common';
 import { Observable, Subject } from 'rxjs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -39,21 +39,11 @@ export class UsersService {
       relations: ['socialMedia'],
     });
     if (!user) {
-      throw new RpcException(
-        {
-          code: status.NOT_FOUND,
-          message: `User with username ${userName} not found`,
-        }
-      )
+      throw GrpcAppException.notFound('User not found', UserErrorCode.USER_NOT_FOUND);
     }
     const isPasswordValid = await bcrypt.compare(userPassword, user.password);
     if (!isPasswordValid) {
-      throw new RpcException(
-        {
-          code: status.UNAUTHENTICATED,
-          message: `Invalid password`,
-        }
-      )
+      throw GrpcAppException.invalidCredentials('Invalid credentials', UserErrorCode.INVALID_CREDENTIALS);
     }
     return UserMapper.toGrpc(user);
   }
@@ -77,12 +67,7 @@ export class UsersService {
       relations: ['socialMedia'],
     }).then(user => user ? UserMapper.toGrpc(user) : null);
     if (!user) {
-      throw new RpcException(
-        {
-          code: status.NOT_FOUND,
-          message: `User with id ${id} not found`,
-        }
-      )
+      throw GrpcAppException.notFound('User not found', UserErrorCode.USER_NOT_FOUND)
     }
     return user;
   }

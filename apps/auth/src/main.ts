@@ -4,6 +4,7 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { join } from 'path';
 import { USER_PACKAGE_NAME } from '@app/common/types/user';
 import { AUTH_PACKAGE_NAME } from '@app/common/types/auth';
+import { GrpcExceptionFilter } from '@app/common';
 
 async function bootstrap() {
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
@@ -22,6 +23,7 @@ async function bootstrap() {
       }
     }
   )
+  // app.useGlobalFilters(new GrpcExceptionFilter());
   await app.listen();
 }
 bootstrap();

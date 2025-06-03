@@ -35,6 +35,12 @@
       ],
       "@app/database/*": [
         "libs/database/src/*"
+      ],
+      "@app/errors": [
+        "libs/errors/src"
+      ],
+      "@app/errors/*": [
+        "libs/errors/src/*"
       ]
     }
   }

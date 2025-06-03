@@ -46,6 +46,5 @@
         "tsConfigPath": "libs/common/tsconfig.lib.json"
       }
     }
-   
   }
 }

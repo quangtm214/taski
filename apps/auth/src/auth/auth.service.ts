@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { AuthResponse, LoginRequest, RegisterRequest } from '@app/common/types/auth';
-import { CreateUserDto, JwtService, UserRole } from '@app/common';
+import { CreateUserDto, GrpcAppException, JwtService, UserErrorCode, UserRole } from '@app/common';
 import * as bcrypt from 'bcrypt';
 import { RpcException } from '@nestjs/microservices';
 import { status } from '@grpc/grpc-js';
@@ -15,13 +15,9 @@ export class AuthService {
     async register(registerRequest: RegisterRequest): Promise<AuthResponse> {
         //check if user already exists
         const existingUser = await this.userService.findByQuery({ username: registerRequest.username });
+        console.log('existingUser', existingUser);
         if (existingUser.users.length > 0) {
-            throw new RpcException(
-                {
-                    code: status.ALREADY_EXISTS,
-                    message: `User with username ${registerRequest.username} already exists`
-                }
-            )
+            throw GrpcAppException.alreadyExists('User already exists', UserErrorCode.USER_ALREADY_EXISTS)
         }
         let userDto: CreateUserDto;
         userDto = {

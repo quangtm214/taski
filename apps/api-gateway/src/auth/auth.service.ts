@@ -1,3 +1,4 @@
+import { GrpcClientWrapper } from '@app/common';
 import { AUTH_SERVICE_NAME, AuthServiceClient, LoginRequest, RegisterRequest } from '@app/common/types/auth';
 import { status } from '@grpc/grpc-js';
 import { BadRequestException, Inject, Injectable, InternalServerErrorException, NotFoundException, OnModuleInit } from '@nestjs/common';
@@ -9,7 +10,11 @@ import { lastValueFrom } from 'rxjs';
 export class AuthService implements OnModuleInit {
     private authService: AuthServiceClient
 
-    constructor(@Inject(AUTH_SERVICE) private client: ClientGrpc) { }
+    constructor(
+        @Inject(AUTH_SERVICE) private client: ClientGrpc,
+        private readonly grpcClient: GrpcClientWrapper,
+
+    ) { }
 
     onModuleInit() {
         this.authService = this.client.getService<AuthServiceClient>(
@@ -18,15 +23,16 @@ export class AuthService implements OnModuleInit {
     }
 
     async register(request: RegisterRequest) {
-        try {
-            const result = await lastValueFrom(this.authService.register(request));
-            return result;
-        } catch (error) {
-            if (error.code === status.ALREADY_EXISTS) {
-                throw new BadRequestException(error.details)
-            }
-            throw new InternalServerErrorException('An unexpected error occurred during registration.')
-        }
+        return await this.grpcClient.handle(() => this.authService.register(request))
+        // try {
+        //     const result = await lastValueFrom(this.authService.register(request));
+        //     return result;
+        // } catch (error) {
+        //     if (error.code === status.ALREADY_EXISTS) {
+        //         throw new BadRequestException(error.details)
+        //     }
+        //     throw new InternalServerErrorException('An unexpected error occurred during registration.')
+        // }
     }
 
     async login(request: LoginRequest) {
