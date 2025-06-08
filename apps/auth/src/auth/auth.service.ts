@@ -15,7 +15,6 @@ export class AuthService {
     async register(registerRequest: RegisterRequest): Promise<AuthResponse> {
         //check if user already exists
         const existingUser = await this.userService.findByQuery({ username: registerRequest.username });
-        console.log('existingUser', existingUser);
         if (existingUser.users.length > 0) {
             throw GrpcAppException.alreadyExists('User already exists', UserErrorCode.USER_ALREADY_EXISTS)
         }
