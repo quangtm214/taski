@@ -46,13 +46,31 @@
         "tsConfigPath": "libs/common/tsconfig.lib.json"
       }
     },
+    "notification": {
+      "type": "application",
+      "root": "apps/notification",
+      "entryFile": "src/main",
+      "sourceRoot": "apps/notification/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/notification/tsconfig.app.json"
+      }
+    },
     "orchestrator": {
       "type": "application",
       "root": "apps/orchestrator",
-      "entryFile": "main",
+      "entryFile": "src/main",
       "sourceRoot": "./",
       "compilerOptions": {
         "tsConfigPath": "apps/orchestrator/tsconfig.app.json"
+      }
+    },
+    "test-rmq": {
+      "type": "application",
+      "root": "apps/test-rmq",
+      "entryFile": "main",
+      "sourceRoot": "apps/test-rmq/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/test-rmq/tsconfig.app.json"
       }
     }
   }

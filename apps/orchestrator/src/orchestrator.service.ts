@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
+import { EventPattern, Payload } from '@nestjs/microservices';
 
 @Injectable()
 export class OrchestratorService {
-  getHello(): string {
-    return 'Hello World!';
-  }
+  // @EventPattern('authUserCreated') // ĐÚNG
+  // async handleUserCreated(@Payload() data: any) {
+  //   console.log('RECEIVED EVENT: auth.user.created', data);
+  // }
 }

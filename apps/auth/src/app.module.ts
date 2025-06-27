@@ -3,7 +3,7 @@ import { UsersModule } from './users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from './users/entities/user.entity';
 import { SocialMediaEntity } from './users/entities/social-media.entity';
-import { SharedAuthModule } from '@app/common';
+import { RabbitMQModule, SharedAuthModule } from '@app/common';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 

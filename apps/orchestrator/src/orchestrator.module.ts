@@ -3,6 +3,7 @@ import { OrchestratorController } from './orchestrator.controller';
 import { OrchestratorService } from './orchestrator.service';
 import { ConfigModule } from '@nestjs/config';
 import { RabbitMQConfig, RabbitMQModule } from '@app/common';
+import { WorkflowsModule } from './workflows/workflows.module';
 
 @Module({
   imports: [
@@ -10,9 +11,7 @@ import { RabbitMQConfig, RabbitMQModule } from '@app/common';
       isGlobal: true,
       envFilePath: '.env',
     }),
-    RabbitMQModule.register({
-      name: 'orchestrator'
-    })
+    // WorkflowsModule
   ],
   controllers: [OrchestratorController],
   providers: [OrchestratorService],

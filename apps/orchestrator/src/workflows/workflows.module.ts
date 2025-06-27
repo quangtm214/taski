@@ -3,10 +3,12 @@ import { Module } from '@nestjs/common';
 import { RabbitMQModule } from '@app/common';
 import { WorkflowsController } from './workflows.controller';
 import { WorkflowsService } from './workflows.service';
+import { OrchestratorModule } from 'apps/orchestrator/src/orchestrator.module';
 
 @Module({
-    imports: [RabbitMQModule.register({ name: 'orchestrator' })],
+    imports: [
+    ],
     controllers: [WorkflowsController],
-    providers: [WorkflowsService],
+    providers: [],
 })
 export class WorkflowsModule { }

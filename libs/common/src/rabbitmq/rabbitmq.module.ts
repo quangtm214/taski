@@ -1,5 +1,5 @@
 import { DynamicModule, Module } from '@nestjs/common';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ClientProxy, ClientsModule, Transport } from '@nestjs/microservices';
 import { RabbitMQConfig } from './rabbitmq.config';
 import { RabbitMQService } from './rabbitmq.service';
 
@@ -19,13 +19,19 @@ export class RabbitMQModule {
                             queueOptions: {
                                 durable: true,
                             },
-                            persistent: true,
-                            noAck: false,
+                            exchange: RabbitMQConfig.exchanges.events.name,
+                            exchangeType: RabbitMQConfig.exchanges.events.type || 'topic',
+                            // noAck: false,
+                            // persistent: true,
                         },
                     },
                 ]),
             ],
-            providers: [RabbitMQService],
+            providers: [{
+                provide: RabbitMQService,
+                useFactory: (client: ClientProxy) => new RabbitMQService(client),
+                inject: [options.name],
+            },],
             exports: [ClientsModule, RabbitMQService],
         };
     }

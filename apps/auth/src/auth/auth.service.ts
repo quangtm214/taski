@@ -1,15 +1,17 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { AuthResponse, LoginRequest, RegisterRequest } from '@app/common/types/auth';
-import { CreateUserDto, GrpcAppException, JwtService, UserErrorCode, UserRole } from '@app/common';
+import { CreateUserDto, GrpcAppException, JwtService, RabbitMQConfig, RabbitMQService, UserErrorCode, UserRole } from '@app/common';
 import * as bcrypt from 'bcrypt';
-import { RpcException } from '@nestjs/microservices';
+import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { status } from '@grpc/grpc-js';
 @Injectable()
 export class AuthService {
     constructor(
+        @Inject('ORCHESTRATOR_CLIENT') private client: ClientProxy,
         private readonly userService: UsersService,
-        private readonly jwtService: JwtService
+        private readonly jwtService: JwtService,
+        private readonly rabbitMQService: RabbitMQService
     ) { }
 
     async register(registerRequest: RegisterRequest): Promise<AuthResponse> {
@@ -30,6 +32,9 @@ export class AuthService {
         const hashedPassword = await bcrypt.hash(registerRequest.password, 10);
         userDto.password = hashedPassword;
         const user = await this.userService.create(userDto);
+
+        this.rabbitMQService.publish(RabbitMQConfig.routingKeys.userCreated, user);
+        // this.client.emit(RabbitMQConfig.routingKeys.userCreated, user);
         const jwtPayload = {
             userId: user.id,
             username: user.username,
