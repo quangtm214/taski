@@ -1,26 +1,24 @@
-import { Injectable } from '@nestjs/common';
-import { RabbitMQService } from '@app/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { getRabbitMQServiceToken, RabbitMQConfig, RabbitMQService } from '@app/common';
 
 @Injectable()
 export class WorkflowsService {
-    constructor(private readonly rabbitMQService: RabbitMQService) { }
+    constructor(
+        @Inject(getRabbitMQServiceToken('notifications'))
+        private readonly rabbitMQService: RabbitMQService
+    ) { }
 
     async startUserOnboardingWorkflow(userData: any) {
-        // 1. Gửi email chào mừng
-        await this.rabbitMQService.publish('notifications.send', {
-            type: 'email',
-            recipient: userData.email,
-            template: 'welcome',
-            data: userData,
-        });
+        // 1. Gửi notification cho user mới
+        await this.rabbitMQService.publish(RabbitMQConfig.routingKeys.sendNotificationUserCreated, userData);
 
         // 2. Tạo task mặc định cho user mới
-        await this.rabbitMQService.publish('tasks.task.create', {
-            title: 'Complete your profile',
-            description: 'Please complete your profile to get started',
-            userId: userData.id,
-            priority: 'high',
-        });
+        // await this.rabbitMQService.publish('tasks.task.create', {
+        //     title: 'Complete your profile',
+        //     description: 'Please complete your profile to get started',
+        //     userId: userData.id,
+        //     priority: 'high',
+        // });
 
         return { success: true, message: 'User onboarding workflow started' };
     }

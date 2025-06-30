@@ -7,8 +7,9 @@ import { OrchestratorModule } from 'apps/orchestrator/src/orchestrator.module';
 
 @Module({
     imports: [
+        RabbitMQModule.register({ name: 'notifications' }),
     ],
     controllers: [WorkflowsController],
-    providers: [],
+    providers: [WorkflowsService],
 })
 export class WorkflowsModule { }

@@ -34,6 +34,6 @@ export const RabbitMQConfig = {
     userUpdated: 'auth.user.updated',
     taskCreated: 'tasks.task.created',
     taskCompleted: 'tasks.task.completed',
-    sendNotification: 'notifications.send',
+    sendNotificationUserCreated: 'notifications.send.user.created',
   }
 };

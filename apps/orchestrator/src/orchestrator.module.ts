@@ -11,7 +11,7 @@ import { WorkflowsModule } from './workflows/workflows.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
-    // WorkflowsModule
+    WorkflowsModule
   ],
   controllers: [OrchestratorController],
   providers: [OrchestratorService],

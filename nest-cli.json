@@ -50,7 +50,7 @@
       "type": "application",
       "root": "apps/notification",
       "entryFile": "src/main",
-      "sourceRoot": "apps/notification/src",
+      "sourceRoot": "./",
       "compilerOptions": {
         "tsConfigPath": "apps/notification/tsconfig.app.json"
       }

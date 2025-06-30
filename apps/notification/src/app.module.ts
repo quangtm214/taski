@@ -21,7 +21,6 @@ import { NotificationEntity } from 'apps/notification/src/notification/entities/
       entities: [NotificationEntity],
       synchronize: true,
     }),
-    RabbitMQModule.register({ name: 'notifications' }),
     NotificationModule
   ],
 })

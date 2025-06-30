@@ -1,16 +1,23 @@
 import { Controller } from '@nestjs/common';
-import { EventPattern, MessagePattern, Payload } from '@nestjs/microservices';
+import { Ctx, EventPattern, MessagePattern, Payload, RmqContext } from '@nestjs/microservices';
 import { WorkflowsService } from './workflows.service';
 import { RabbitMQConfig } from '@app/common';
 
 @Controller()
 export class WorkflowsController {
-    // constructor(private readonly workflowsService: WorkflowsService) { }
+    constructor(
+        private readonly workflowsService: WorkflowsService
+    ) { }
 
-    @EventPattern('auth.user.created')
-    async handleUserCreated(@Payload() data: any) {
+    @EventPattern(RabbitMQConfig.routingKeys.userCreated)
+    async handleUserCreated(@Payload() data: any, @Ctx() context: RmqContext) {
+        const channel = context.getChannelRef();
+        const originalMsg = context.getMessage();
         console.log('RECEIVED EVENT: auth.user.created', data);
-        // await this.workflowsService.startUserOnboardingWorkflow(data);
+        await this.workflowsService.startUserOnboardingWorkflow(data);
+        channel.ack(originalMsg);
+
+        return { status: 'ok' }
     }
 
     // @EventPattern('tasks.task.created')
